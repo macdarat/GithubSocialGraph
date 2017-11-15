@@ -11,8 +11,22 @@ namespace GithubReader
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("test");
+            Console.WriteLine("Print user");
+            PrintUser("macdarat");
+            Console.ReadLine();
+        }
+
+        async static void PrintUser(string uname)
+        {
             var github = new GitHubClient(new ProductHeaderValue("GithubReader"));
+            var user = await github.User.Get(uname);
+            Console.WriteLine(uname + "'s bio:" + user.Bio + uname + "'s total public repos:" + user.PublicRepos);
+            ApiInfo apiInfo = github.GetLastApiInfo();
+
+            var rateLimit = apiInfo?.RateLimit;
+            var reqPerHour = rateLimit?.Limit;
+            var reqRemaining = rateLimit?.Remaining;
+            Console.WriteLine(reqPerHour + " reqs per hour, remaining reqs:" + reqRemaining);
         }
     }
 }
