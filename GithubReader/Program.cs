@@ -14,13 +14,16 @@ namespace GithubReader
             Console.WriteLine("Enter github username:");
             string username = Console.ReadLine();
             Console.WriteLine("Enter github password:");
-            string password = Console.ReadLine();
+            string password = ReadPassword();
 
             var client = new GitHubClient(new ProductHeaderValue("GithubSocialGraph"));
             var basicAuth = new Credentials(username, password);
             client.Credentials = basicAuth;
-            
-            PrintUser("macdarat", client).Wait();
+
+            Console.WriteLine("Enter username to view");
+            string unameToView = Console.ReadLine();
+
+            PrintUser(unameToView, client).Wait();
             Console.ReadKey();
         }
 
@@ -28,12 +31,13 @@ namespace GithubReader
         private static string ReadPassword()
         {
             string result = "";
-            char currentChar = 'a';
+            char currentChar = Console.ReadKey(true).KeyChar;
             while (currentChar != '\r')
             {
-                currentChar = Console.ReadKey(true).KeyChar;
                 result += currentChar;
+                currentChar = Console.ReadKey(true).KeyChar;
             }
+
             return result;
         }
 
