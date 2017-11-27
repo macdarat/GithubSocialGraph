@@ -11,20 +11,38 @@ namespace GithubReader
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Print user");
-            PrintUser("macdarat");
-            Console.ReadLine();
+            Console.WriteLine("Enter github username:");
+            string username = Console.ReadLine();
+            Console.WriteLine("Enter github password:");
+            string password = Console.ReadLine();
+
+            var client = new GitHubClient(new ProductHeaderValue("GithubSocialGraph"));
+            var basicAuth = new Credentials(username, password);
+            client.Credentials = basicAuth;
+            
+            PrintUser("macdarat", client).Wait();
+            Console.ReadKey();
         }
 
-        /**
-         * Print details about a given user on Github
-         */
-        async static void PrintUser(string uname)
+        /** <summary> Reads a user's password without having it echoed to console </summary> */
+        private static string ReadPassword()
         {
-            var github = new GitHubClient(new ProductHeaderValue("GithubReader"));
+            string result = "";
+            char currentChar = 'a';
+            while (currentChar != '\r')
+            {
+                currentChar = Console.ReadKey(true).KeyChar;
+                result += currentChar;
+            }
+            return result;
+        }
+
+        /** <summary> Print details about a given user on Github </summary> */
+        async static Task PrintUser(string uname, GitHubClient github)
+        {
+            Console.WriteLine("Print user");
             var user = await github.User.Get(uname);
             Console.WriteLine(uname + "'s bio:" + user.Bio + uname + "'s total public repos:" + user.PublicRepos);
-            ApiInfo apiInfo = github.GetLastApiInfo();
 
             var repos = await github.Repository.GetAllForUser(uname);
             foreach (Repository r in repos)
@@ -32,6 +50,7 @@ namespace GithubReader
                 Console.WriteLine("Repository {0}, {1}, language {2}, last updated {3}, created at {4}", 
                     r.FullName, r.Description, r.Language, r.UpdatedAt, r.CreatedAt);
             }
+            ApiInfo apiInfo = github.GetLastApiInfo();
 
             var rateLimit = apiInfo?.RateLimit;
             var reqPerHour = rateLimit?.Limit;
