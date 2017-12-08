@@ -20,11 +20,48 @@ namespace GithubReader
             var basicAuth = new Credentials(username, password);
             client.Credentials = basicAuth;
 
-            Console.WriteLine("Enter username to view");
-            string unameToView = Console.ReadLine();
+            
 
-            PrintUser(unameToView, client).Wait();
+            FetchRepoDetails(client).Wait();
+            //PrintUser(client).Wait();
             Console.ReadKey();
+        }
+
+        /** <summary> Fetches details about top repositories for a number of languages    </summary>         */
+        async static Task FetchRepoDetails(GitHubClient github)
+        {
+            Console.WriteLine("Getting repo details");
+            var searchReq = new SearchRepositoriesRequest();
+            searchReq.Stars = Range.GreaterThan(1000);
+
+            searchReq.Language = Language.CSharp;
+            var cSharpRepos = await github.Search.SearchRepo(searchReq);
+
+            /* TODO add these
+            searchReq.Language = Language.C;
+            var cRepos = await github.Search.SearchRepo(searchReq);
+
+            searchReq.Language = Language.Java;
+            var javaRepos = await github.Search.SearchRepo(searchReq);
+
+            searchReq.Language = Language.Ruby;
+            var rubyRepos = await github.Search.SearchRepo(searchReq);
+
+            searchReq.Language = Language.Assembly;
+            var asmRepos = await github.Search.SearchRepo(searchReq);*/
+
+            if(cSharpRepos.IncompleteResults)
+            {
+                Console.WriteLine("Incomplete");
+            }
+            var cSharp = cSharpRepos.Items;
+            Console.WriteLine("{0} items", cSharp.Count);
+            foreach(Repository r in cSharp)
+            {
+                Console.WriteLine(r.FullName);
+            }
+
+            PrintReqsRemaining(github);
         }
 
         /** <summary> Reads a user's password without having it echoed to console </summary> */
@@ -42,24 +79,31 @@ namespace GithubReader
         }
 
         /** <summary> Print details about a given user on Github </summary> */
-        async static Task PrintUser(string uname, GitHubClient github)
+        async static Task PrintUser(GitHubClient github)
         {
+            Console.WriteLine("Enter username to view");
+            string uname = Console.ReadLine();
+
             Console.WriteLine("Print user");
             var user = await github.User.Get(uname);
             Console.WriteLine(uname + "'s bio:" + user.Bio + uname + "'s total public repos:" + user.PublicRepos);
 
             var repos = await github.Repository.GetAllForUser(uname);
-            foreach (Repository r in repos)
+            foreach (Octokit.Repository r in repos)
             {
                 Console.WriteLine("Repository {0}, {1}, language {2}, last updated {3}, created at {4}", 
                     r.FullName, r.Description, r.Language, r.UpdatedAt, r.CreatedAt);
             }
-            ApiInfo apiInfo = github.GetLastApiInfo();
+            PrintReqsRemaining(github);          
+        }
 
+        public static void PrintReqsRemaining(GitHubClient github)
+        {
+            ApiInfo apiInfo = github.GetLastApiInfo();
             var rateLimit = apiInfo?.RateLimit;
             var reqPerHour = rateLimit?.Limit;
             var reqRemaining = rateLimit?.Remaining;
-            Console.WriteLine(reqPerHour + " reqs per hour, remaining reqs:" + reqRemaining);
+            Console.WriteLine("-------\n" + reqPerHour + " reqs per hour, remaining reqs:" + reqRemaining);
         }
     }
 }
