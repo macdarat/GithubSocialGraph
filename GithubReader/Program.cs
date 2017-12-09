@@ -30,38 +30,50 @@ namespace GithubReader
         /** <summary> Fetches details about top repositories for a number of languages    </summary>         */
         async static Task FetchRepoDetails(GitHubClient github)
         {
-            Console.WriteLine("Getting repo details");
-            var searchReq = new SearchRepositoriesRequest();
-            searchReq.Stars = Range.GreaterThan(1000);
+            Console.WriteLine("Getting repo details\n");
+            var searchReq = new SearchRepositoriesRequest
+            {
+                Stars = Range.GreaterThan(500),
+                SortField = RepoSearchSort.Stars,
+                Order = SortDirection.Descending,
+                PerPage = 50
+            };
 
             searchReq.Language = Language.CSharp;
             var cSharpRepos = await github.Search.SearchRepo(searchReq);
-
-            /* TODO add these
+            OutputRepoDetails(cSharpRepos, "C#");
+            
             searchReq.Language = Language.C;
             var cRepos = await github.Search.SearchRepo(searchReq);
+            OutputRepoDetails(cRepos, "C");
 
             searchReq.Language = Language.Java;
             var javaRepos = await github.Search.SearchRepo(searchReq);
+            OutputRepoDetails(javaRepos, "Java");
 
             searchReq.Language = Language.Ruby;
             var rubyRepos = await github.Search.SearchRepo(searchReq);
+            OutputRepoDetails(rubyRepos, "Ruby");
 
             searchReq.Language = Language.Assembly;
-            var asmRepos = await github.Search.SearchRepo(searchReq);*/
+            var asmRepos = await github.Search.SearchRepo(searchReq);
+            OutputRepoDetails(asmRepos, "Assembly");
 
-            if(cSharpRepos.IncompleteResults)
+            PrintReqsRemaining(github);
+        }
+
+        public static void OutputRepoDetails(SearchRepositoryResult sResult, string language)
+        {
+            if (sResult.IncompleteResults)
             {
-                Console.WriteLine("Incomplete");
+                Console.WriteLine("INCOMPLETE RESULTS FOR {0}", language);
             }
-            var cSharp = cSharpRepos.Items;
-            Console.WriteLine("{0} items", cSharp.Count);
-            foreach(Repository r in cSharp)
+            var languageResults = sResult.Items;
+            Console.WriteLine("\n{0} items for {1}\n", languageResults.Count, language);
+            foreach (Repository r in languageResults)
             {
                 Console.WriteLine(r.FullName);
             }
-
-            PrintReqsRemaining(github);
         }
 
         /** <summary> Reads a user's password without having it echoed to console </summary> */
