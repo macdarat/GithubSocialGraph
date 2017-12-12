@@ -40,11 +40,13 @@ namespace GithubReader
                 PerPage = 50
             };
 
-            string filePath = "repositories.csv";
+            string filePath = "..\\..\\..\\repositories.csv"; //places file 3 directories up, in proper place
             File.Create(filePath);      //create file to store results in
-
+            
             searchReq.Language = Language.CSharp;
             var cSharpRepos = await github.Search.SearchRepo(searchReq);
+            string line = "language,OpenIssuesCount,ForksCount,Size\n";     //add first row of csv
+            File.AppendAllText(filePath, line);
             OutputRepoDetails(cSharpRepos, "C#", filePath);
             
             searchReq.Language = Language.C;
@@ -58,6 +60,18 @@ namespace GithubReader
             searchReq.Language = Language.Ruby;
             var rubyRepos = await github.Search.SearchRepo(searchReq);
             OutputRepoDetails(rubyRepos, "Ruby", filePath);
+
+            searchReq.Language = Language.JavaScript;
+            var javascriptRepos = await github.Search.SearchRepo(searchReq);
+            OutputRepoDetails(javascriptRepos, "JavaScript", filePath);
+
+            searchReq.Language = Language.Haskell;
+            var haskellRepos = await github.Search.SearchRepo(searchReq);
+            OutputRepoDetails(haskellRepos, "Haskell", filePath);
+
+            searchReq.Language = Language.Python;
+            var pythonRepos = await github.Search.SearchRepo(searchReq);
+            OutputRepoDetails(javaRepos, "Python", filePath);
 
             searchReq.Language = Language.Assembly;
             var asmRepos = await github.Search.SearchRepo(searchReq);
