@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Octokit;
+using System.IO;
 
 namespace GithubReader
 {
@@ -33,36 +34,40 @@ namespace GithubReader
             Console.WriteLine("Getting repo details\n");
             var searchReq = new SearchRepositoriesRequest
             {
-                Stars = Range.GreaterThan(500),
+                Stars = Range.GreaterThan(250),
                 SortField = RepoSearchSort.Stars,
                 Order = SortDirection.Descending,
                 PerPage = 50
             };
 
+            string filePath = "repositories.csv";
+            File.Create(filePath);      //create file to store results in
+
             searchReq.Language = Language.CSharp;
             var cSharpRepos = await github.Search.SearchRepo(searchReq);
-            OutputRepoDetails(cSharpRepos, "C#");
+            OutputRepoDetails(cSharpRepos, "C#", filePath);
             
             searchReq.Language = Language.C;
             var cRepos = await github.Search.SearchRepo(searchReq);
-            OutputRepoDetails(cRepos, "C");
+            OutputRepoDetails(cRepos, "C", filePath);
 
             searchReq.Language = Language.Java;
             var javaRepos = await github.Search.SearchRepo(searchReq);
-            OutputRepoDetails(javaRepos, "Java");
+            OutputRepoDetails(javaRepos, "Java", filePath);
 
             searchReq.Language = Language.Ruby;
             var rubyRepos = await github.Search.SearchRepo(searchReq);
-            OutputRepoDetails(rubyRepos, "Ruby");
+            OutputRepoDetails(rubyRepos, "Ruby", filePath);
 
             searchReq.Language = Language.Assembly;
             var asmRepos = await github.Search.SearchRepo(searchReq);
-            OutputRepoDetails(asmRepos, "Assembly");
+            OutputRepoDetails(asmRepos, "Assembly", filePath);
 
             PrintReqsRemaining(github);
         }
 
-        public static void OutputRepoDetails(SearchRepositoryResult sResult, string language)
+        /** <summary> Outputs repos details to console, then appends relevant info for each repo into a csv file </summary>*/
+        public static void OutputRepoDetails(SearchRepositoryResult sResult, string language, string filePath)
         {
             if (sResult.IncompleteResults)
             {
@@ -73,6 +78,8 @@ namespace GithubReader
             foreach (Repository r in languageResults)
             {
                 Console.WriteLine(r.FullName);
+                string line = language + "," + r.OpenIssuesCount + "," + r.ForksCount + "," + r.Size + "\n";
+                File.AppendAllText(filePath, line);
             }
         }
 
