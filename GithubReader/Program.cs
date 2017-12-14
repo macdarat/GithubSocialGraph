@@ -47,7 +47,7 @@ namespace GithubReader
             var cSharpRepos = await github.Search.SearchRepo(searchReq);
             string line = "language,OpenIssuesCount,ForksCount,Size\n";     //add first row of csv
             File.AppendAllText(filePath, line);
-            line = "language,OpenIssuesAverage,ForksAverage,SizeAverage\n";     //add first row of csv
+            line = "language,OpenIssuesAverage\n";//+ ,ForksAverage,SizeAverage\n";     //add first row of csv
             File.AppendAllText(averageFP, line);
 
             OutputRepoDetails(cSharpRepos, "C#", filePath, averageFP);
@@ -114,7 +114,7 @@ namespace GithubReader
                 count++;
             }
 
-            line = language + "," + openIssuesAv + "," + ForksCountAv + "," + sizeAv + "\n";
+            line = language + "," + openIssuesAv + "\n";// + "," + ForksCountAv + "," + sizeAv + "\n";
             File.AppendAllText(averageFP, line);
 
         }
