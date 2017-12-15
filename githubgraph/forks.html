@@ -1,9 +1,11 @@
 <!DOCTYPE html>
+
+<!-- https://bl.ocks.org/mbostock/3885304 basis -->
 <meta charset="utf-8">
 <style>
 
 .bar {
-  fill: red;
+  fill: green;
 }
 
 .bar:hover {
@@ -15,11 +17,12 @@
 }
 
 </style>
+<div>
+<h3>The average number of Forks for the top 50 repositories by number of stars in each language</h3>
 
-<h3>The average number of Open Issues for the top 50 repositories by number of stars in each language</h3>
+<svg width="700" height="600"></svg>
 
-
-<svg width="960" height="500"></svg>
+</div>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
 
@@ -34,7 +37,7 @@ var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
 var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-
+     //get data from csv
     d3.csv("repoAverages.csv", function(d, i, columns) {
       for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
       return d;
@@ -45,7 +48,7 @@ var g = svg.append("g")
       }
 
   x.domain(data.map(function(d) { return d.language; }));
-  y.domain([0, d3.max(data, function(d) { return d.OpenIssuesAverage; })]);
+  y.domain([0, d3.max(data, function(d) { return d.ForksAverage; })]);
 
   g.append("g")
       .attr("class", "axis axis--x")
@@ -62,23 +65,23 @@ var g = svg.append("g")
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .attr("fill", "black")
-      .text("Open Issues Average");
+      .text("Forks Average");
 
   g.selectAll(".bar")
     .data(data)
     .enter().append("rect")
     .attr("class", "bar")
     .attr("x", function(d) { return x(d.language); })
-    .attr("y", function(d) { return y(d.OpenIssuesAverage); })
+    .attr("y", function(d) { return y(d.ForksAverage); })
     .attr("width", x.bandwidth())
-    .attr("height", function(d) { return height - y(d.OpenIssuesAverage);
+    .attr("height", function(d) { return height - y(d.ForksAverage);
      }).on("mouseover", function() { tooltip.style("display", null); })
     .on("mouseout", function() { tooltip.style("display", "none"); })
     .on("mousemove", function(d) {
     var xPosition = d3.mouse(this)[0] - 5;
     var yPosition = d3.mouse(this)[1] - 5;
     tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
-    tooltip.select("text").text(d.OpenIssuesAverage)});
+    tooltip.select("text").text(d.ForksAverage)});
 });
 
 var tooltip = svg.append("g")
@@ -99,3 +102,8 @@ tooltip.append("text")
   .attr("font-weight", "bold");
 
 </script>
+
+<h4>
+<a href="/githubgraph/openissues.html">Open Issues Graph</a>
+<a href="/githubgraph/size.html">Size Graph</a>
+</h4>

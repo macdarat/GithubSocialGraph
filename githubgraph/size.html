@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<!-- https://bl.ocks.org/mbostock/3885304 basis -->
+<meta charset="utf-8">
+<style>
+
+.bar {
+  fill: purple;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis--x path {
+  display: none;
+}
+
+</style>
+<div>
+<h3>The average Size for the top 50 repositories by number of stars in each language</h3>
+
+<svg width="700" height="600"></svg>
+
+</div>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 50, bottom: 30, left: 60},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom;
+
+var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+    y = d3.scaleLinear().rangeRound([height, 0]);
+
+var g = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+     //get data from csv
+    d3.csv("repoAverages.csv", function(d, i, columns) {
+      for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+      return d;
+    }, function(error, data) {
+      if (error){
+         alert("An error has occurred");
+         throw error;
+      }
+
+  x.domain(data.map(function(d) { return d.language; }));
+  y.domain([0, d3.max(data, function(d) { return d.SizeAverage; })]);
+
+  g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y))
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .attr("fill", "black")
+      .text("Size Average");
+
+  g.selectAll(".bar")
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", function(d) { return x(d.language); })
+    .attr("y", function(d) { return y(d.SizeAverage); })
+    .attr("width", x.bandwidth())
+    .attr("height", function(d) { return height - y(d.SizeAverage);
+     }).on("mouseover", function() { tooltip.style("display", null); })
+    .on("mouseout", function() { tooltip.style("display", "none"); })
+    .on("mousemove", function(d) {
+    var xPosition = d3.mouse(this)[0] - 5;
+    var yPosition = d3.mouse(this)[1] - 5;
+    tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+    tooltip.select("text").text(d.SizeAverage)});
+});
+
+var tooltip = svg.append("g")
+  .attr("class", "tooltip")
+  .style("display", "none");
+
+tooltip.append("rect")
+  .attr("width", 60)
+  .attr("height", 20)
+  .attr("fill", "pink")
+  .style("opacity", 0.5);
+
+tooltip.append("text")
+  .attr("x", 30)
+  .attr("dy", "1.2em")
+  .style("text-anchor", "middle")
+  .attr("font-size", "12px")
+  .attr("font-weight", "bold");
+
+</script>
+
+<h4>
+<a href="/githubgraph/openissues.html">Open Issues Graph</a>
+<a href="/githubgraph/forks.html">Forks Graph</a>
+</h4>
